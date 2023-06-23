@@ -10,6 +10,7 @@ function App() {
   return (
     <Box padding={4}>
       <Container maxWidth={'container.xl'} border={'1px'} px={6}>
+        <Header />
         <Routes>
           <Route path='posts' element={<PostsPage />} />
           <Route path='tasks' element={<AlbumsPage />} />
