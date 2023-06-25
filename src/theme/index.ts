@@ -1,10 +1,13 @@
 import {StyleFunctionProps, extendTheme} from '@chakra-ui/react';
 import {mode} from '@chakra-ui/theme-tools';
+import {Button} from './ButtonStyles';
 
 export const theme = extendTheme({
   colors: {
-    black: '#000000',
-    white: '#FDFBF5',
+    dark: '#333333',
+    darkHover: '#ebebeb',
+    light: '#FDFBF5',
+    lightHover: '',
   },
   fonts: {
     body: 'Roboto, sans-serif',
@@ -14,12 +17,14 @@ export const theme = extendTheme({
     initialColorMode: 'dark',
     useSystemColorMode: true,
   },
+  components: {
+    Button,
+  },
   styles: {
     global: (props: StyleFunctionProps) => ({
       body: {
-        color: mode('#000000', '#FDFBF5')(props),
-        //bg: mode('#FDFBF5', props.theme.semanticTokens.colors['chakra-body-bg'].dark)(props),
-        bg: mode('#FDFBF5', '#333333')(props),
+        color: mode('dark', 'light')(props),
+        bg: mode('light', 'dark')(props),
       },
     }),
   },
