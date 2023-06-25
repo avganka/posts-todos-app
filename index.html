@@ -9,6 +9,12 @@
 
 <body>
   <div id="root"></div>
+  <svg xmlns='//www.w3.org/2000/svg' version='1.1' class='svg-filters' style="display: none;">
+    <filter id='marker-shape'>
+      <feTurbulence type='fractalNoise' baseFrequency='0 0.15' numOctaves='1' result='warp' />
+      <feDisplacementMap xChannelSelector='R' yChannelSelector='G' scale='30' in='SourceGraphic' in2='warp' />
+    </filter>
+  </svg>
   <script type="module" src="/src/main.tsx"></script>
 </body>
 
