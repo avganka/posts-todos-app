@@ -9,7 +9,7 @@ import {Box, Container} from '@chakra-ui/react';
 function App() {
   return (
     <Box padding={4}>
-      <Container maxWidth={'container.xl'} border={'1px'} px={6}>
+      <Container maxWidth={'container.lg'} border={'1px'} px={6}>
         <Header />
         <Routes>
           <Route path='posts' element={<PostsPage />} />

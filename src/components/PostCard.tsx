@@ -1,58 +1,109 @@
-import {StarIcon} from '@chakra-ui/icons';
-import {Badge, Box, Button} from '@chakra-ui/react';
-import axios from 'axios';
-import {useEffect, useState} from 'react';
+import {
+  Box,
+  Button,
+  ButtonGroup,
+  Collapse,
+  Divider,
+  Flex,
+  Icon,
+  ScaleFade,
+  Text,
+  VStack,
+  useColorModeValue,
+  useDisclosure,
+} from '@chakra-ui/react';
+import {BsChat, BsChatText, BsBookmark, BsFillTrashFill, BsPencilSquare} from 'react-icons/bs';
+import {PostWithComments, User} from '../types';
+import {MouseEvent, useEffect, useState} from 'react';
+import {API_ROUTES} from '../api/apiRoutes';
+import {api} from '../api/apiConfig';
+import {Link} from 'react-router-dom';
+import PostHeading from './PostHeading';
+import {firstLetterToUppercase} from '../helpers/firstLetterToUppercase';
+import UserComment from './UserComment';
 
-function PostCard() {
-  const [posts, setPosts] = useState();
+function PostCard({post}: {post: PostWithComments}) {
+  const color = useColorModeValue('blackAlpha.600', 'whiteAlpha.600');
+
+  const [user, setUser] = useState<User>();
+
+  const {isOpen: isOpenIcons, onToggle: onToggleIcons} = useDisclosure();
+  const {isOpen: isOpenComments, onToggle: onToggleComments} = useDisclosure();
 
   useEffect(() => {
-    const fetchPosts = async () => {
-      const {data} = await axios('');
+    const fetchUser = async () => {
+      const {data} = await api.get<User>(`${API_ROUTES.users}/${post.userId}`);
+      setUser(data);
     };
-  });
+    fetchUser();
+  }, [post]);
+
+  const toggleIcons = (evt: MouseEvent) => {
+    evt.stopPropagation();
+    onToggleIcons();
+  };
 
   return (
-    <Box maxW='sm' borderWidth='1px' borderRadius='lg' overflow='hidden'>
-      <Box p='6'>
-        <Box display='flex' alignItems='baseline'>
-          <Badge borderRadius='full' px='2' colorScheme='teal'>
-            New
-          </Badge>
-          <Box
-            color='gray.500'
+    <Box border={'1px'} height={'full'} onMouseEnter={toggleIcons} onMouseLeave={toggleIcons}>
+      <Flex direction={'column'} p='6' pb='2' height={'full'}>
+        <Flex alignItems='center' justifyContent={'space-between'} gap={2} flexWrap={'wrap'}>
+          <Text
+            color={color}
             fontWeight='semibold'
             letterSpacing='wide'
             fontSize='xs'
             textTransform='uppercase'
-            ml='2'
           >
-            {'dddd'}
-          </Box>
-        </Box>
+            {user?.name}
+          </Text>
 
-        <Box mt='1' fontWeight='semibold' as='h4' lineHeight='tight' noOfLines={1}>
-          'title'
-        </Box>
+          <ScaleFade initialScale={0.5} in={isOpenIcons}>
+            <ButtonGroup spacing={{base: 1, md: 3}}>
+              <Button variant={'ghost'}>
+                <Icon as={BsPencilSquare} boxSize={4} />
+              </Button>
+              <Button variant={'ghost'}>
+                <Icon as={BsFillTrashFill} cursor={'pointer'} />
+              </Button>
+            </ButtonGroup>
+          </ScaleFade>
+        </Flex>
 
-        <Box>
-          '123123'
-          <Box as='span' color='gray.600' fontSize='sm'>
-            / wk
-          </Box>
-        </Box>
+        <PostHeading as='h2' mt='2' mb='4' fontSize={{base: 24, md: 30}}>
+          <Link to={`${post.id}`}>{firstLetterToUppercase(post.title)}</Link>
+        </PostHeading>
 
-        <Box display='flex' mt='2' alignItems='center'>
-          {Array(5)
-            .fill('')
-            .map((_, i) => (
-              <StarIcon key={i} />
+        <Text mb={4}>{firstLetterToUppercase(post.body)}</Text>
+
+        <Divider borderColor={'color'} mt={'auto'} />
+        <ButtonGroup spacing={{base: 1, md: 3}} my={2}>
+          <Button
+            onClick={onToggleComments}
+            variant={'ghost'}
+            color={isOpenComments ? 'yellow.500' : ''}
+            leftIcon={
+              isOpenComments ? (
+                <Icon as={BsChatText} boxSize={4} />
+              ) : (
+                <Icon as={BsChat} boxSize={4} />
+              )
+            }
+          >
+            {post.comments.length}
+          </Button>
+          <Button variant={'ghost'}>
+            <Icon as={BsBookmark} boxSize={4} />
+          </Button>
+        </ButtonGroup>
+
+        <Collapse in={isOpenComments} animateOpacity>
+          <VStack spacing={6}>
+            {post.comments.map((comment) => (
+              <UserComment key={comment.id} comment={comment} />
             ))}
-          <Box as='span' ml='2' color='gray.600' fontSize='sm'>
-            20 reviews
-          </Box>
-        </Box>
-      </Box>
+          </VStack>
+        </Collapse>
+      </Flex>
     </Box>
   );
 }
