@@ -2,109 +2,201 @@ import {
   Box,
   Button,
   ButtonGroup,
+  Checkbox,
   Collapse,
-  Divider,
   Flex,
   Icon,
-  ScaleFade,
   Text,
   VStack,
   useColorModeValue,
   useDisclosure,
+  useToast,
 } from '@chakra-ui/react';
 import {BsChat, BsChatText, BsBookmark, BsFillTrashFill, BsPencilSquare} from 'react-icons/bs';
-import {PostWithComments, User} from '../types';
-import {MouseEvent, useEffect, useState} from 'react';
+import {Post, Comment, User} from '../types';
+import {useState} from 'react';
 import {API_ROUTES} from '../api/apiRoutes';
-import {api} from '../api/apiConfig';
+import {api, fetcher} from '../api/apiConfig';
 import {Link} from 'react-router-dom';
 import PostHeading from './PostHeading';
-import {firstLetterToUppercase} from '../helpers/firstLetterToUppercase';
 import UserComment from './UserComment';
+import PostEdit from './PostEdit';
+import Toast from './Toast';
+import useSWR from 'swr';
+import {errorHandler} from '../helpers/errorHandler';
+import ConfirmationModal from './ConfirmationModal';
 
-function PostCard({post}: {post: PostWithComments}) {
+interface PostCardProps {
+  post: Post;
+  onPostDelete: (postId: number) => void;
+}
+
+function PostCard({post: initialPost, onPostDelete}: PostCardProps) {
   const color = useColorModeValue('blackAlpha.600', 'whiteAlpha.600');
+  const toast = useToast();
+  const {
+    isOpen: isPostEditigOpen,
+    onOpen: onPostEditigOpen,
+    onClose: onPostEditigClose,
+  } = useDisclosure();
+  const {isOpen: isOpenCommentsList, onToggle: onToggleCommentsList} = useDisclosure();
+  const {
+    isOpen: isConfirmationModalOpen,
+    onOpen: onConfirmationModalOpen,
+    onClose: onConfirmationModalClose,
+  } = useDisclosure();
 
-  const [user, setUser] = useState<User>();
+  const [post, setPosts] = useState<Post>(initialPost);
+  const [comments, setComments] = useState<Comment[]>([]);
+  const [isCommensLoading, setIsCommentsLoading] = useState(false);
 
-  const {isOpen: isOpenIcons, onToggle: onToggleIcons} = useDisclosure();
-  const {isOpen: isOpenComments, onToggle: onToggleComments} = useDisclosure();
+  const {data: user} = useSWR<User>(`${API_ROUTES.users}/${post.userId}`, fetcher, {
+    onError: (error) => {
+      toast({
+        position: 'bottom-left',
+        render: () => <Toast>Failed to load. {errorHandler(error)}</Toast>,
+      });
+    },
+  });
 
-  useEffect(() => {
-    const fetchUser = async () => {
-      const {data} = await api.get<User>(`${API_ROUTES.users}/${post.userId}`);
-      setUser(data);
-    };
-    fetchUser();
-  }, [post]);
+  const {data: users} = useSWR<User[]>(`${API_ROUTES.users}`, fetcher, {
+    onError: (error) => {
+      toast({
+        position: 'bottom-left',
+        render: () => <Toast>Failed to load. {errorHandler(error)}</Toast>,
+      });
+    },
+  });
 
-  const toggleIcons = (evt: MouseEvent) => {
-    evt.stopPropagation();
-    onToggleIcons();
+  const onToggleComments = async () => {
+    if (comments.length > 0) {
+      onToggleCommentsList();
+      return;
+    }
+    try {
+      setIsCommentsLoading(true);
+      const {data} = await api.get<Comment[]>(`${API_ROUTES.posts}/${post.id}/comments`);
+      setIsCommentsLoading(false);
+      setComments(data);
+    } catch (error) {
+      toast({
+        position: 'bottom-left',
+        render: () => <Toast>Failed to load. {errorHandler(error)}</Toast>,
+      });
+      setIsCommentsLoading(false);
+    }
+
+    onToggleCommentsList();
+  };
+
+  const onPostEditingSubmit = async (newPost: Post) => {
+    try {
+      const {data: updatedPost} = await api.put<Post>(`${API_ROUTES.posts}/${post.id}`, newPost);
+      setPosts(updatedPost);
+    } catch (error) {
+      toast({
+        position: 'bottom-left',
+        render: () => <Toast>Failed to update. {errorHandler(error)}</Toast>,
+      });
+    }
   };
 
   return (
-    <Box border={'1px'} height={'full'} onMouseEnter={toggleIcons} onMouseLeave={toggleIcons}>
-      <Flex direction={'column'} p='6' pb='2' height={'full'}>
-        <Flex alignItems='center' justifyContent={'space-between'} gap={2} flexWrap={'wrap'}>
-          <Text
-            color={color}
-            fontWeight='semibold'
-            letterSpacing='wide'
-            fontSize='xs'
-            textTransform='uppercase'
-          >
-            {user?.name}
-          </Text>
+    <>
+      <Box w={'full'} border={'1px solid'}>
+        <Box p='6'>
+          <Flex alignItems='center' justifyContent={'space-between'} gap={2} flexWrap={'wrap'}>
+            <Text
+              color={color}
+              fontWeight='semibold'
+              letterSpacing='wide'
+              fontSize='xs'
+              textTransform='uppercase'
+            >
+              {user && user.name}
+            </Text>
 
-          <ScaleFade initialScale={0.5} in={isOpenIcons}>
+            <Checkbox value={post.id.toString()} colorScheme='primary' px={'12px'}></Checkbox>
+          </Flex>
+
+          <PostHeading
+            as='h2'
+            mt='2'
+            mb='4'
+            fontSize={{base: 24, md: 30}}
+            _firstLetter={{
+              textTransform: 'uppercase',
+            }}
+          >
+            <Link to={`${post.id}`}>{post.title}</Link>
+          </PostHeading>
+
+          <Text
+            mb={4}
+            _firstLetter={{
+              textTransform: 'uppercase',
+            }}
+          >
+            {post.body}
+          </Text>
+          <Flex
+            alignItems={'center'}
+            justifyContent={'space-between'}
+            pt={2}
+            borderTop={'1px solid'}
+          >
             <ButtonGroup spacing={{base: 1, md: 3}}>
-              <Button variant={'ghost'}>
-                <Icon as={BsPencilSquare} boxSize={4} />
+              <Button
+                onClick={onToggleComments}
+                isLoading={isCommensLoading}
+                variant={'ghost'}
+                color={isOpenCommentsList ? 'yellow.500' : ''}
+              >
+                {isOpenCommentsList ? (
+                  <Icon as={BsChatText} boxSize={4} />
+                ) : (
+                  <Icon as={BsChat} boxSize={4} />
+                )}
               </Button>
               <Button variant={'ghost'}>
+                <Icon as={BsBookmark} boxSize={4} />
+              </Button>
+            </ButtonGroup>
+            <ButtonGroup spacing={{base: 1, md: 3}}>
+              <Button variant={'ghost'} onClick={onPostEditigOpen}>
+                <Icon as={BsPencilSquare} boxSize={4} />
+              </Button>
+              <Button variant={'ghost'} onClick={onConfirmationModalOpen}>
                 <Icon as={BsFillTrashFill} cursor={'pointer'} />
               </Button>
             </ButtonGroup>
-          </ScaleFade>
-        </Flex>
+          </Flex>
+          <Collapse in={isOpenCommentsList} animateOpacity>
+            <VStack spacing={6} mt={6}>
+              {comments?.map((comment) => (
+                <UserComment key={comment.id} comment={comment} />
+              ))}
+            </VStack>
+          </Collapse>
+        </Box>
+      </Box>
 
-        <PostHeading as='h2' mt='2' mb='4' fontSize={{base: 24, md: 30}}>
-          <Link to={`${post.id}`}>{firstLetterToUppercase(post.title)}</Link>
-        </PostHeading>
+      <PostEdit
+        users={users}
+        post={post}
+        isOpen={isPostEditigOpen}
+        onClose={onPostEditigClose}
+        onSubmit={onPostEditingSubmit}
+      />
 
-        <Text mb={4}>{firstLetterToUppercase(post.body)}</Text>
-
-        <Divider borderColor={'color'} mt={'auto'} />
-        <ButtonGroup spacing={{base: 1, md: 3}} my={2}>
-          <Button
-            onClick={onToggleComments}
-            variant={'ghost'}
-            color={isOpenComments ? 'yellow.500' : ''}
-            leftIcon={
-              isOpenComments ? (
-                <Icon as={BsChatText} boxSize={4} />
-              ) : (
-                <Icon as={BsChat} boxSize={4} />
-              )
-            }
-          >
-            {post.comments.length}
-          </Button>
-          <Button variant={'ghost'}>
-            <Icon as={BsBookmark} boxSize={4} />
-          </Button>
-        </ButtonGroup>
-
-        <Collapse in={isOpenComments} animateOpacity>
-          <VStack spacing={6}>
-            {post.comments.map((comment) => (
-              <UserComment key={comment.id} comment={comment} />
-            ))}
-          </VStack>
-        </Collapse>
-      </Flex>
-    </Box>
+      <ConfirmationModal
+        title='Confirm Delete'
+        message='Are you sure you want to delete this post?'
+        isOpen={isConfirmationModalOpen}
+        onClose={onConfirmationModalClose}
+        onConfirm={() => onPostDelete(post.id)}
+      />
+    </>
   );
 }
 
