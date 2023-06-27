@@ -21,35 +21,33 @@ function Header() {
   const {colorMode, toggleColorMode} = useColorMode();
   return (
     <Box as='header' borderBottom={'1px'} py={{base: '4', sm: '6'}}>
-      <Flex columnGap={6}>
+      <Flex columnGap={4}>
         <Flex
           ml={14}
           flexGrow={1}
           alignItems={'center'}
           justifyContent={'center'}
-          gap={{base: '4', sm: '12'}}
+          rowGap={{base: '4', sm: '12'}}
           flexWrap={'wrap'}
         >
-          {MENU.map(({name, url}, index, arr) => (
-            <>
-              <Link
-                key={url}
-                as={ReactRouterLink}
-                to={url}
-                width={{base: 'full', sm: 'auto'}}
-                textAlign={'center'}
-                textTransform={'uppercase'}
-                textUnderlineOffset={4}
-                _activeLink={{fontWeight: 700, textDecoration: 'underline'}}
-              >
-                {name}
-              </Link>
-              {index !== arr.length - 1 && (
-                <Center height={6} display={{base: 'none', sm: 'block'}}>
-                  <Divider orientation='vertical' borderColor={'color'} />
-                </Center>
-              )}
-            </>
+          {MENU.map(({name, url}) => (
+            <Link
+              px={6}
+              key={url}
+              as={ReactRouterLink}
+              to={url}
+              width={{base: 'full', sm: 'auto'}}
+              textAlign={'center'}
+              textTransform={'uppercase'}
+              textUnderlineOffset={4}
+              _activeLink={{fontWeight: 700, textDecoration: 'underline'}}
+              borderRight={{base: 'none', sm: '1px solid'}}
+              _last={{
+                border: 'none',
+              }}
+            >
+              {name}
+            </Link>
           ))}
         </Flex>
         <Button onClick={toggleColorMode}>
