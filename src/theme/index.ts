@@ -1,6 +1,7 @@
 import {StyleFunctionProps, extendTheme} from '@chakra-ui/react';
 import {mode} from '@chakra-ui/theme-tools';
 import {Button} from './ButtonStyles';
+import {Input} from './InputStyles';
 
 export const theme = extendTheme({
   colors: {
@@ -8,6 +9,10 @@ export const theme = extendTheme({
     darkHover: '#ebebeb',
     light: '#FDFBF5',
     lightHover: '',
+
+    primary: {
+      500: '#333333',
+    },
   },
   fonts: {
     body: 'Roboto, sans-serif',
@@ -19,6 +24,7 @@ export const theme = extendTheme({
   },
   components: {
     Button,
+    Input,
   },
   styles: {
     global: (props: StyleFunctionProps) => ({
