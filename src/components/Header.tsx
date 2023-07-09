@@ -1,4 +1,4 @@
-import {Box, Button, Center, Divider, Flex, Icon, Link, useColorMode} from '@chakra-ui/react';
+import {Box, Button, Flex, Icon, Link, useColorMode} from '@chakra-ui/react';
 import {BsMoonFill, BsSunFill} from 'react-icons/bs';
 import {NavLink as ReactRouterLink} from 'react-router-dom';
 

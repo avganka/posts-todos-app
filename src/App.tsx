@@ -1,9 +1,8 @@
-import {Navigate, Route, Routes} from 'react-router-dom';
 import AlbumsPage from './pages/AlbumsPage';
 import PostsPage from './pages/PostsPage';
 import TodosPage from './pages/TodosPage';
 import Header from './components/Header';
-
+import {Navigate, Route, Routes} from 'react-router-dom';
 import {Box, Container} from '@chakra-ui/react';
 
 function App() {

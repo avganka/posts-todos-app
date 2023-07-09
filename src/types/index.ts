@@ -5,6 +5,7 @@ export interface Post {
   id: Id;
   title: string;
   body: string;
+  user: User;
 }
 
 export interface PostWithComments extends Post {
@@ -69,3 +70,5 @@ export interface Company {
   catchPhrase: string;
   bs: string;
 }
+
+export type SortType = 'desc' | 'asc' | 'popular';

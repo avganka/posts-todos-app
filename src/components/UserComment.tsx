@@ -1,5 +1,5 @@
-import {Box, Flex, Text, useColorModeValue} from '@chakra-ui/react';
 import {Comment} from '../types';
+import {Box, Flex, Text, useColorModeValue} from '@chakra-ui/react';
 
 function UserComment({comment}: {comment: Comment}) {
   const color = useColorModeValue('blackAlpha.600', 'whiteAlpha.600');
