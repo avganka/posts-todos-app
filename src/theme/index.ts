@@ -1,7 +1,7 @@
-import {StyleFunctionProps, extendTheme} from '@chakra-ui/react';
-import {mode} from '@chakra-ui/theme-tools';
 import {Button} from './ButtonStyles';
 import {Input} from './InputStyles';
+import {StyleFunctionProps, extendTheme} from '@chakra-ui/react';
+import {mode} from '@chakra-ui/theme-tools';
 
 export const theme = extendTheme({
   colors: {
