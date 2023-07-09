@@ -1,49 +1,30 @@
-import {Id} from '../types';
+import {api} from '../api/apiConfig';
 import {useToast} from '@chakra-ui/react';
-import {useReducer, useCallback, Reducer} from 'react';
+import {Dispatch, SetStateAction, useCallback, useState} from 'react';
 
-type Action<T> =
-  | {type: 'getDataStart'}
-  | {type: 'getDataSuccess'; payload: T}
-  | {type: 'getDataError'; payload: Error};
-
-interface State<T> {
+interface ReturnDate<T> {
   data: T | null;
-  isLoading: boolean;
-  error: Error | null;
-}
-
-function reducer<T>(state: State<T>, action: Action<T>): State<T> {
-  switch (action.type) {
-    case 'getDataStart':
-      return {...state, isLoading: true, error: null};
-    case 'getDataSuccess':
-      return {...state, isLoading: false, data: action.payload, error: null};
-    case 'getDataError':
-      return {...state, isLoading: false, error: action.payload};
-    default:
-      return state;
-  }
+  loading: boolean;
+  length: number;
 }
 
 export function useFetchData<T>(
-  fetcher: (param?: string | number) => Promise<T>
-): [State<T>, (param?: string | number) => Promise<void>] {
+  url: string
+): [ReturnDate<T>, () => Promise<void>, Dispatch<SetStateAction<T | null>>] {
   const toast = useToast();
-  const [state, dispatch] = useReducer<Reducer<State<T>, Action<T>>>(reducer, {
-    data: null,
-    isLoading: false,
-    error: null,
-  });
+
+  const [data, setData] = useState<T | null>(null);
+  const [loading, setLoading] = useState<boolean>(false);
+  const [length, setLength] = useState<number>(0);
 
   const fetchData = useCallback(async () => {
-    dispatch({type: 'getDataStart'});
+    setLoading(true);
     try {
-      const data = await fetcher(param);
-      dispatch({type: 'getDataSuccess', payload: data});
+      const res = await api.get<T>(url);
+      setData(res.data);
+      setLength(Number(res.headers['x-total-count']));
     } catch (error) {
       if (error instanceof Error) {
-        dispatch({type: 'getDataError', payload: error});
         toast({
           title: `Failed to fetch data. ${error.message}!`,
           position: 'bottom-left',
@@ -51,7 +32,8 @@ export function useFetchData<T>(
         });
       }
     }
-  }, [fetcher, toast, param]);
+    setLoading(false);
+  }, [toast, url]);
 
-  return [state, fetchData];
+  return [{data, loading, length}, fetchData, setData];
 }
