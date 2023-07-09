@@ -158,6 +158,11 @@ function PostsPage() {
     }
   };
 
+  const onLimitChange = (newLimit: number) => {
+    setItemsCountPerPage(newLimit);
+    goToPage(1);
+  };
+
   if (!posts) {
     return (
       <Center my={6}>
@@ -242,7 +247,7 @@ function PostsPage() {
           </VStack>
           <Flex my={6} justifyContent={'space-between'} gap={6}>
             <Pagination currentPage={currentPage} totalPages={totalPages} onChangePage={goToPage} />
-            <ItemsPerPageToggler limit={itemsPerPage} onLimitChange={setItemsCountPerPage} />
+            <ItemsPerPageToggler limit={itemsPerPage} onLimitChange={onLimitChange} />
           </Flex>
         </>
       ) : (
