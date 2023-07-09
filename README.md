@@ -13,13 +13,13 @@
 Склонируйте репозиторий
 
 ```bash
-git clone <repo_url>
+git clone https://github.com/avganka/posts-todos-app.git
 ```
 
 Перейдите в папку с проектом
 
 ```bash
-cd <project_directory>
+cd posts-todos-app
 ```
 
 Установите все зависимости
