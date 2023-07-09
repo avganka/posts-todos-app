@@ -1,5 +1,7 @@
 import {Button} from './ButtonStyles';
 import {Input} from './InputStyles';
+import {Select} from './SelectStyles';
+import {Textarea} from './TextareaStyles';
 import {StyleFunctionProps, extendTheme} from '@chakra-ui/react';
 import {mode} from '@chakra-ui/theme-tools';
 
@@ -25,6 +27,8 @@ export const theme = extendTheme({
   components: {
     Button,
     Input,
+    Textarea,
+    Select,
   },
   styles: {
     global: (props: StyleFunctionProps) => ({
